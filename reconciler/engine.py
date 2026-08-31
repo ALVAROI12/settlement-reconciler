@@ -2,7 +2,7 @@
 
 Each stage consumes settlements and bank lines it can explain and hands the rest
 down. Nothing is ever matched twice, and every link carries the stage that made it
-and why -- an operator has to be able to argue with the answer.
+and why - an operator has to be able to argue with the answer.
 
 No business calendar is needed anywhere: the settlement file states the date the
 processor expects to fund, and every stage reasons about drift from that date. A
@@ -33,7 +33,7 @@ class Engine:
         self.stage_counts = defaultdict(int)
         self.last_statement_date = max(t.posted_date for t in bank) if bank else None
 
-    # -- bookkeeping ------------------------------------------------------
+    # - bookkeeping ------------------------------------------------------
     def _link(self, settlement, txn, amount, stage, confidence, rationale):
         self.links.append(MatchLink(settlement.settlement_id, txn.bank_txn_id, amount,
                                     stage, confidence, rationale))
@@ -67,7 +67,7 @@ class Engine:
             out.append(t)
         return sorted(out, key=lambda t: (t.posted_date, t.bank_txn_id))
 
-    # -- stages -----------------------------------------------------------
+    # - stages -----------------------------------------------------------
     def run(self):
         self.stage_exact_on_time()
         self.stage_exact_late()
@@ -113,7 +113,7 @@ class Engine:
         These get large: Amex funds T+3, so Friday, Saturday and Sunday all land on
         the same Monday, and across three stores that is nine batches inside one
         credit. The first pass looks only at batches due exactly on the credit's
-        date -- by this point the ones that funded on their own are already gone,
+        date - by this point the ones that funded on their own are already gone,
         so what remains due that day is usually the whole group.
         """
         for window in (0, self.late_window):
@@ -154,7 +154,7 @@ class Engine:
 
         So each store is solved over the whole period at once. A store's drawers
         can only be banked front to back, which makes its history a partition into
-        consecutive runs -- a shortest-path problem, not a series of local guesses.
+        consecutive runs - a shortest-path problem, not a series of local guesses.
         Stores are then reconciled against each other: when two claim the same
         teller deposit, the closer count keeps it and the other store re-plans
         without it.
@@ -199,7 +199,7 @@ class Engine:
 
     def stage_debits(self):
         """Chargebacks and the monthly Amex discount bill are debits, and they are
-        settlements too -- the book does not balance without them."""
+        settlements too - the book does not balance without them."""
         for s in self._open_settlements(types=("CHARGEBACK", "MONTHLY_FEE"), positive=False):
             if s.net_amount >= 0:
                 continue
@@ -281,7 +281,7 @@ def _subset_summing_to(items, target, max_size, key=lambda s: s.net_amount):
     Solved as a reachability table over attainable totals rather than by trying
     every combination, because a nine-way Amex credit has 512 of them. If two
     different subsets both hit the target the answer is ambiguous, and an
-    ambiguous match is worse than none -- it is left for a human instead.
+    ambiguous match is worse than none - it is left for a human instead.
     """
     items = [i for i in items if key(i) > 0][:20]
     if len(items) < 2 or target <= 0:

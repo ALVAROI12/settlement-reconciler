@@ -1,7 +1,7 @@
 """The review stage is only safe if a wrong answer cannot become a wrong number.
 
-These tests hand the validator deliberately bad proposals -- invented ids, sums
-that do not add up, borrowed lines, hedged confidence -- and assert that none of
+These tests hand the validator deliberately bad proposals - invented ids, sums
+that do not add up, borrowed lines, hedged confidence - and assert that none of
 them reach the reconciliation.
 """
 

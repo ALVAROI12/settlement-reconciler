@@ -13,7 +13,7 @@ class Location:
     name: str
     base_daily_orders: int
     median_ticket: float
-    # Mon..Sun demand multipliers -- weekends carry a recreation/retail business.
+    # Mon..Sun demand multipliers - weekends carry a recreation/retail business.
     dow_multipliers: Tuple[float, ...] = (0.72, 0.75, 0.86, 1.02, 1.38, 1.62, 1.25)
     open_days: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
 
@@ -23,11 +23,11 @@ class Processor:
     """How one money source pays out.
 
     fee_billing:
-      DAILY_NET  -- fees withheld from each deposit (Toast/Square style)
-      MONTHLY    -- deposits arrive gross, fees debited once a month (Amex style)
+      DAILY_NET  - fees withheld from each deposit (Toast/Square style)
+      MONTHLY    - deposits arrive gross, fees debited once a month (Amex style)
     payout:
-      DAILY      -- one batch per business date
-      WEEKLY     -- one remittance covering a Mon-Sun period (marketplaces)
+      DAILY      - one batch per business date
+      WEEKLY     - one remittance covering a Mon-Sun period (marketplaces)
     """
     code: str
     label: str
@@ -87,7 +87,7 @@ class Scenario:
 @dataclass
 class AnomalyRates:
     """Injected break rates. Each one is labelled in the ground truth, so a
-    reconciliation agent can be scored on finding it -- not just on matching."""
+    reconciliation agent can be scored on finding it - not just on matching."""
     late_deposit: float = 0.040       # deposit lands 1-3 business days late
     combined_deposit: float = 0.070   # processor rolls locations into one ACH
     split_deposit: float = 0.030      # one batch paid as two ACH lines

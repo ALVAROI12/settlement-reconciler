@@ -65,7 +65,7 @@ def main(argv=None):
                     help="first business date, YYYY-MM-DD")
     ap.add_argument("--days", type=int, default=Scenario.days, help="days to simulate")
     ap.add_argument("--clean", action="store_true",
-                    help="no injected anomalies -- a dataset that reconciles perfectly")
+                    help="no injected anomalies - a dataset that reconciles perfectly")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 

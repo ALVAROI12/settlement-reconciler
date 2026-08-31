@@ -110,7 +110,7 @@ def _daily_batches(scenario, procs, daily, refunds, rng, cfg, log):
 
         rate, labels = proc.discount_rate, []
         if agg["gross"] and rng.random() < cfg.fee_overcharge:
-            # A rate spike that never breaks the match -- only the math betrays it.
+            # A rate spike that never breaks the match - only the math betrays it.
             rate = round(proc.discount_rate + rng.uniform(0.004, 0.011), 5)
             labels.append("fee_overcharge")
             log.append({"type": "fee_overcharge", "settlement_id": sid,
@@ -186,7 +186,7 @@ def _chargebacks(payments, procs):
 
 
 def _monthly_fees(scenario, procs, settlements):
-    """Amex funds gross and bills the discount rate once a month -- the deposits
+    """Amex funds gross and bills the discount rate once a month - the deposits
     reconcile only if you also find this debit."""
     out = []
     by_month = defaultdict(lambda: {"fees": 0, "gross": 0, "count": 0})

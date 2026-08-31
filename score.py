@@ -3,7 +3,7 @@
 
     python3 score.py --truth data --submission predictions.csv
 
-Submission CSV: settlement_id,bank_txn_id  -- one row per proposed link.
+Submission CSV: settlement_id,bank_txn_id  - one row per proposed link.
 Leave bank_txn_id blank to assert "this settlement was never deposited".
 
 Reported: link precision/recall/F1, recall split by match shape, settlement-level

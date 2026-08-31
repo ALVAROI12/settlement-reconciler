@@ -127,7 +127,7 @@ def _write_report(out_dir, summary, findings, engine, review=None):
     for kind, group in sorted(grouped.items(),
                               key=lambda kv: -sum(abs(f.amount) for f in kv[1])):
         total = sum(abs(f.amount) for f in group)
-        lines += ["### %s -- %d item(s), $%.2f at stake" % (
+        lines += ["### %s - %d item(s), $%.2f at stake" % (
             kind.replace("_", " "), len(group), total / 100.0), ""]
         for f in group[:10]:
             lines.append("- **%s** %s" % (f.severity, f.summary))
@@ -159,7 +159,7 @@ def main(argv=None):
     ap.add_argument("--llm-cache", default="llm_cache.json",
                     help="replay file; a cached case is never re-asked")
     ap.add_argument("--llm-batch", action="store_true",
-                    help="use the Batches API -- half price, not latency-sensitive")
+                    help="use the Batches API - half price, not latency-sensitive")
     ap.add_argument("--llm-max-cases", type=int, default=None)
     ap.add_argument("--llm-offline", action="store_true",
                     help="answer only from the cache; never call the API")

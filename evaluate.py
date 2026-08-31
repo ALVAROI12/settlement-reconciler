@@ -3,8 +3,8 @@
 
     python3 evaluate.py --seeds 7 21 55 99 --days 180
 
-Each seed is a different six months of trading -- different volumes, different
-breaks, different weekends -- so a number that only holds on one dataset shows up
+Each seed is a different six months of trading - different volumes, different
+breaks, different weekends - so a number that only holds on one dataset shows up
 here as variance rather than as a headline.
 """
 

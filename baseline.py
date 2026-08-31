@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """A deliberately naive matcher: exact amount, inside the expected deposit window,
 first unused bank line wins. It is the floor an agent has to beat, and it fails
-in exactly the places the dataset is designed to be hard -- combined deposits,
+in exactly the places the dataset is designed to be hard - combined deposits,
 split deposits, cash, and anything that lands late.
 
     python3 baseline.py --data data --out baseline_predictions.csv

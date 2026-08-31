@@ -1,0 +1,337 @@
+<title>Settlement Tie-Out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root {
+  --ground: #f2f5f3; --surface: #fbfcfb; --surface-2: #eef2f0;
+  --ink: #16211e; --ink-2: #4c5c57; --ink-3: #74837e;
+  --line: #dce3df; --line-strong: #c3cdc8;
+  --accent: #0f5f6e; --accent-soft: #d9e8ea;
+  --good: #1f7a4d; --warn: #c07a05; --crit: #bc2a1e;
+  --good-soft: #e0efe6; --warn-soft: #f6ecd8; --crit-soft: #f7e2df;
+  --radius: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0d1211; --surface: #141b19; --surface-2: #1b2321;
+    --ink: #e7eeea; --ink-2: #a7b4af; --ink-3: #7d8b86;
+    --line: #232d2a; --line-strong: #33403c;
+    --accent: #4aa9bb; --accent-soft: #16333a;
+    --good: #34926a; --warn: #b5811c; --crit: #d1584a;
+    --good-soft: #14291f; --warn-soft: #2a2314; --crit-soft: #2e1c19;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0d1211; --surface: #141b19; --surface-2: #1b2321;
+  --ink: #e7eeea; --ink-2: #a7b4af; --ink-3: #7d8b86;
+  --line: #232d2a; --line-strong: #33403c;
+  --accent: #4aa9bb; --accent-soft: #16333a;
+  --good: #34926a; --warn: #b5811c; --crit: #d1584a;
+  --good-soft: #14291f; --warn-soft: #2a2314; --crit-soft: #2e1c19;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 24px 72px; }
+
+.masthead {
+  border-bottom: 1px solid var(--line); background: var(--surface);
+  padding: 30px 0 22px; margin-bottom: 28px;
+}
+.masthead .wrap { padding-bottom: 0; }
+.masthead h1 {
+  font-family: Newsreader, Georgia, "Times New Roman", serif;
+  font-weight: 500; font-size: 34px; line-height: 1.15; margin: 0 0 6px;
+  letter-spacing: -0.01em; text-wrap: balance;
+}
+.masthead p { margin: 0; color: var(--ink-2); max-width: 62ch; }
+.meta {
+  display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 18px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px; color: var(--ink-3);
+}
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+@media (max-width: 900px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+.tile {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px 16px 14px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.tile .label {
+  font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600;
+}
+.tile .value {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 27px; font-weight: 500; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+.tile .sub { font-size: 12.5px; color: var(--ink-2); }
+.tile.flag .value { color: var(--crit); }
+
+h2 {
+  font-family: Newsreader, Georgia, serif; font-weight: 500;
+  font-size: 20px; margin: 40px 0 14px; letter-spacing: -0.005em;
+}
+h2 .count { color: var(--ink-3); font-size: 14px; font-family: Archivo, sans-serif; }
+
+.split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+.panel {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 20px 20px;
+}
+.panel h3 {
+  margin: 0 0 4px; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2);
+}
+.panel .note { margin: 0 0 16px; font-size: 13px; color: var(--ink-3); }
+
+.bars { display: flex; flex-direction: column; gap: 11px; }
+.bar-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; }
+.bar-row .name { font-size: 13.5px; color: var(--ink); }
+.bar-row .num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px;
+  font-variant-numeric: tabular-nums; color: var(--ink-2); align-self: end;
+}
+.bar-track { grid-column: 1 / -1; height: 8px; background: var(--surface-2); border-radius: 2px; }
+.bar-fill {
+  height: 8px; background: var(--accent);
+  border-radius: 0 4px 4px 0; min-width: 3px;
+}
+
+.dispositions { display: flex; flex-direction: column; gap: 0; }
+.disposition {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding: 11px 0; border-bottom: 1px solid var(--line);
+}
+.disposition:last-child { border-bottom: 0; }
+.disposition .name { font-size: 13.5px; }
+.disposition .num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 500;
+}
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chip {
+  font: inherit; font-size: 12.5px; cursor: pointer;
+  background: var(--surface); color: var(--ink-2);
+  border: 1px solid var(--line-strong); border-radius: 999px;
+  padding: 5px 13px;
+}
+.chip:hover { border-color: var(--accent); color: var(--ink); }
+.chip[aria-pressed="true"] {
+  background: var(--accent); border-color: var(--accent); color: var(--surface);
+}
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip .n {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; opacity: 0.75; margin-left: 5px;
+}
+
+.ledger {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow-x: auto;
+}
+table { border-collapse: collapse; width: 100%; min-width: 720px; }
+thead th {
+  text-align: left; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--ink-3); font-weight: 600; padding: 12px 16px;
+  border-bottom: 1px solid var(--line-strong); white-space: nowrap;
+}
+tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: var(--surface-2); }
+td.amount {
+  text-align: right; white-space: nowrap;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; font-size: 13.5px;
+}
+td.what { font-size: 13.5px; color: var(--ink); }
+td.what .ids {
+  display: block; margin-top: 3px; font-size: 11.5px; color: var(--ink-3);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.sev {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+  border-radius: 3px; padding: 3px 8px;
+}
+.sev::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.sev.HIGH { color: var(--crit); background: var(--crit-soft); }
+.sev.MEDIUM { color: var(--warn); background: var(--warn-soft); }
+.sev.LOW { color: var(--good); background: var(--good-soft); }
+.kind { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+
+.empty { padding: 28px 16px; color: var(--ink-3); font-size: 14px; }
+footer {
+  margin-top: 46px; padding-top: 18px; border-top: 1px solid var(--line);
+  color: var(--ink-3); font-size: 12.5px;
+}
+footer code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px;
+  background: var(--surface-2); padding: 1px 5px; border-radius: 3px;
+}
+</style>
+<div class="masthead"><div class="wrap">
+<h1>Settlement Tie-Out</h1>
+<p>Processor settlements tied out against the bank statement, with every exception ranked by the money behind it.</p>
+<div class="meta">
+<span><b>Period</b> 2024-04-01 to 2024-09-27</span>
+<span><b>Settlements</b> 1808</span>
+<span><b>Bank lines</b> 1885</span>
+<span><b>Processors</b> AMEX, DOORDASH, TOAST, UBEREATS</span>
+</div></div></div>
+<div class="wrap">
+<div class="tiles">
+<div class="tile"><span class="label">Tied out</span><span class="value">96.6%</span><span class="sub">1746 of 1808 settlements</span></div>
+<div class="tile"><span class="label">Links</span><span class="value">1,781</span><span class="sub">settlement to bank line</span></div>
+<div class="tile"><span class="label">Exceptions</span><span class="value">88</span><span class="sub">across 5 kinds</span></div>
+<div class="tile flag"><span class="label">At stake</span><span class="value">$34,126.62</span><span class="sub">money behind the exceptions</span></div>
+<div class="tile flag"><span class="label">Open items</span><span class="value">39</span><span class="sub">unfunded or awaiting a decision</span></div>
+</div>
+<div class="split">
+<div class="panel"><h3>How each match was made</h3><p class="note">Stages run most-certain first; each one only sees what the stage above it could not explain.</p><div class="bars">
+<div class="bar-row"><span class="name">Amount, processor and date agree</span><span class="num">1,073</span><div class="bar-track"><div class="bar-fill" style="width:100.0%"></div></div></div>
+<div class="bar-row"><span class="name">Drawers matched to a teller deposit</span><span class="num">509</span><div class="bar-track"><div class="bar-fill" style="width:47.4%"></div></div></div>
+<div class="bar-row"><span class="name">One batch across several credits</span><span class="num">70</span><div class="bar-track"><div class="bar-fill" style="width:6.5%"></div></div></div>
+<div class="bar-row"><span class="name">Several batches in one credit</span><span class="num">46</span><div class="bar-track"><div class="bar-fill" style="width:4.3%"></div></div></div>
+<div class="bar-row"><span class="name">Same, funded a few days behind</span><span class="num">42</span><div class="bar-track"><div class="bar-fill" style="width:3.9%"></div></div></div>
+<div class="bar-row"><span class="name">Chargebacks and monthly fee bills</span><span class="num">41</span><div class="bar-track"><div class="bar-fill" style="width:3.8%"></div></div></div>
+</div></div>
+<div class="panel"><h3>What was not matched</h3><p class="note">A settlement the rules could not prove absent is referred, not asserted.</p><div class="dispositions">
+<div class="disposition"><span class="name">Proven absent from the statement</span><span class="num">11</span></div>
+<div class="disposition"><span class="name">Left for a human to decide</span><span class="num">28</span></div>
+<div class="disposition"><span class="name">Not yet due at the statement cut-off</span><span class="num">23</span></div>
+<div class="disposition"><span class="name">Bank lines with no settlement behind them</span><span class="num">355</span></div>
+</div></div></div>
+<h2>Exceptions <span class="count">88, worst first</span></h2>
+<div class="filters"><button class="chip" data-kind="all" aria-pressed="true">Everything<span class="n">88</span></button>
+<button class="chip" data-kind="cash_variance" aria-pressed="false">Cash came up short<span class="n">44</span></button>
+<button class="chip" data-kind="unexplained_bank_line" aria-pressed="false">Nothing accounts for it<span class="n">17</span></button>
+<button class="chip" data-kind="fee_overcharge" aria-pressed="false">Billed over contract<span class="n">12</span></button>
+<button class="chip" data-kind="missing_deposit" aria-pressed="false">Never funded<span class="n">11</span></button>
+<button class="chip" data-kind="duplicate_credit" aria-pressed="false">Posted twice<span class="n">4</span></button>
+</div>
+<div class="ledger"><table><thead><tr><th>Severity</th><th>Kind</th><th>What happened</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $8,189.76 was due 2024-07-09 and never funded<span class="ids">TOAST-L001-2024-07-05</span></td><td class="amount">$8,189.76</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $4,350.68 was due 2024-08-16 and never funded<span class="ids">TOAST-L001-2024-08-14</span></td><td class="amount">$4,350.68</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $3,484.26 was due 2024-09-17 and never funded<span class="ids">TOAST-L001-2024-09-15</span></td><td class="amount">$3,484.26</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $3,396.36 was due 2024-08-28 and never funded<span class="ids">TOAST-L001-2024-08-26</span></td><td class="amount">$3,396.36</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $3,315.73 was due 2024-06-24 and never funded<span class="ids">TOAST-L002-2024-06-20</span></td><td class="amount">$3,315.73</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $2,258.89 was due 2024-07-03 and never funded<span class="ids">TOAST-L002-2024-07-01</span></td><td class="amount">$2,258.89</td></tr>
+<tr data-kind="duplicate_credit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Posted twice</td><td class="what">TOAST credit of $2,083.58 on 2024-08-09 repeats B-001340, already matched - likely a double post<span class="ids">B-001351 · B-001340</span></td><td class="amount">$2,083.58</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $1,848.42 was due 2024-05-22 and never funded<span class="ids">TOAST-L002-2024-05-20</span></td><td class="amount">$1,848.42</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">AMEX of $1,028.82 was due 2024-06-26 and never funded<span class="ids">AMEX-L001-2024-06-21</span></td><td class="amount">$1,028.82</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">AMEX of $839.02 was due 2024-08-06 and never funded<span class="ids">AMEX-L001-2024-08-01</span></td><td class="amount">$839.02</td></tr>
+<tr data-kind="duplicate_credit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Posted twice</td><td class="what">AMEX credit of $745.59 on 2024-07-15 repeats B-001043, already matched - likely a double post<span class="ids">B-001060 · B-001043</span></td><td class="amount">$745.59</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">TOAST of $339.85 was due 2024-09-13 and never funded<span class="ids">TOAST-L003-2024-09-11</span></td><td class="amount">$339.85</td></tr>
+<tr data-kind="missing_deposit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Never funded</td><td class="what">AMEX of $243.51 was due 2024-04-17 and never funded<span class="ids">AMEX-L003-2024-04-14</span></td><td class="amount">$243.51</td></tr>
+<tr data-kind="duplicate_credit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Posted twice</td><td class="what">AMEX credit of $236.21 on 2024-07-26 repeats B-001193, already matched - likely a double post<span class="ids">B-001194 · B-001193</span></td><td class="amount">$236.21</td></tr>
+<tr data-kind="duplicate_credit"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Posted twice</td><td class="what">AMEX credit of $202.20 on 2024-08-08 repeats B-001319, already matched - likely a double post<span class="ids">B-001339 · B-001319</span></td><td class="amount">$202.20</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $2,203.25, bank took $2,118.56 on 2024-05-06 - $84.69 unaccounted<span class="ids">CASH-L001-2024-05-04 · CASH-L001-2024-05-05 · B-000329</span></td><td class="amount">$84.69</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,634.60, bank took $1,557.83 on 2024-05-28 - $76.77 unaccounted<span class="ids">CASH-L002-2024-05-25 · CASH-L002-2024-05-26 · CASH-L002-2024-05-27 · B-000542</span></td><td class="amount">$76.77</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,520.44, bank took $1,447.92 on 2024-07-12 - $72.52 unaccounted<span class="ids">CASH-L002-2024-07-09 · CASH-L002-2024-07-10 · CASH-L002-2024-07-11 · B-001052</span></td><td class="amount">$72.52</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,096.96, bank took $1,031.14 on 2024-06-10 - $65.82 unaccounted<span class="ids">CASH-L001-2024-06-09 · B-000691</span></td><td class="amount">$65.82</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $2,745.23, bank took $2,681.49 on 2024-04-08 - $63.74 unaccounted<span class="ids">CASH-L001-2024-04-04 · CASH-L001-2024-04-05 · CASH-L001-2024-04-06 · B-000044</span></td><td class="amount">$63.74</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,057.70, bank took $994.24 on 2024-07-30 - $63.46 unaccounted<span class="ids">CASH-L001-2024-07-29 · B-001236</span></td><td class="amount">$63.46</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,019.08, bank took $957.94 on 2024-06-21 - $61.14 unaccounted<span class="ids">CASH-L002-2024-06-19 · CASH-L002-2024-06-20 · B-000814</span></td><td class="amount">$61.14</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,940.02, bank took $1,879.27 on 2024-09-10 - $60.75 unaccounted<span class="ids">CASH-L001-2024-09-07 · CASH-L001-2024-09-08 · CASH-L001-2024-09-09 · B-001696</span></td><td class="amount">$60.75</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,421.85, bank took $1,363.32 on 2024-06-24 - $58.53 unaccounted<span class="ids">CASH-L002-2024-06-21 · CASH-L002-2024-06-22 · B-000827</span></td><td class="amount">$58.53</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,262.74, bank took $1,206.60 on 2024-04-09 - $56.14 unaccounted<span class="ids">CASH-L001-2024-04-07 · CASH-L001-2024-04-08 · B-000064</span></td><td class="amount">$56.14</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,210.17, bank took $1,155.52 on 2024-08-19 - $54.65 unaccounted<span class="ids">CASH-L002-2024-08-15 · CASH-L002-2024-08-16 · B-001455</span></td><td class="amount">$54.65</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $862.32, bank took $810.58 on 2024-05-23 - $51.74 unaccounted<span class="ids">CASH-L002-2024-05-20 · CASH-L002-2024-05-21 · CASH-L002-2024-05-22 · B-000517</span></td><td class="amount">$51.74</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $201.29 on $5,260.92 of gross - 0.87% over the contracted schedule, $45.98 more than agreed<span class="ids">TOAST-L001-2024-05-24</span></td><td class="amount">$45.98</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $111.57 on $2,771.90 of gross - 1.04% over the contracted schedule, $28.96 more than agreed<span class="ids">TOAST-L001-2024-09-11</span></td><td class="amount">$28.96</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $97.74 on $2,272.46 of gross - 1.04% over the contracted schedule, $23.57 more than agreed<span class="ids">TOAST-L003-2024-06-01</span></td><td class="amount">$23.57</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $85.01 on $2,120.98 of gross - 0.98% over the contracted schedule, $20.70 more than agreed<span class="ids">TOAST-L002-2024-08-20</span></td><td class="amount">$20.70</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $133.76 on $3,762.88 of gross - 0.53% over the contracted schedule, $19.79 more than agreed<span class="ids">TOAST-L002-2024-08-18</span></td><td class="amount">$19.79</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $104.73 on $2,972.91 of gross - 0.55% over the contracted schedule, $16.35 more than agreed<span class="ids">TOAST-L001-2024-04-22</span></td><td class="amount">$16.35</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $83.97 on $2,404.25 of gross - 0.49% over the contracted schedule, $11.86 more than agreed<span class="ids">TOAST-L002-2024-04-11</span></td><td class="amount">$11.86</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">TOAST billed $65.25 on $1,675.29 of gross - 0.64% over the contracted schedule, $10.80 more than agreed<span class="ids">TOAST-L003-2024-04-13</span></td><td class="amount">$10.80</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">AMEX billed $15.45 on $387.99 of gross - 0.75% over the contracted schedule, $2.90 more than agreed<span class="ids">AMEX-L002-2024-04-26</span></td><td class="amount">$2.90</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">AMEX billed $14.21 on $357.88 of gross - 0.76% over the contracted schedule, $2.73 more than agreed<span class="ids">AMEX-L002-2024-08-26</span></td><td class="amount">$2.73</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">AMEX billed $10.48 on $241.43 of gross - 1.07% over the contracted schedule, $2.58 more than agreed<span class="ids">AMEX-L003-2024-06-13</span></td><td class="amount">$2.58</td></tr>
+<tr data-kind="fee_overcharge"><td><span class="sev HIGH">HIGH</span></td><td class="kind">Billed over contract</td><td class="what">AMEX billed $12.19 on $304.14 of gross - 0.71% over the contracted schedule, $2.17 more than agreed<span class="ids">AMEX-L003-2024-04-05</span></td><td class="amount">$2.17</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$2,258.89 on 2024-07-09: TST*TOAST INC      DEP MID 412559 TRN28421689 - no settlement accounts for it<span class="ids">B-000991</span></td><td class="amount">$2,258.89</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$1,455.52 on 2024-05-09: BRANCH DEPOSIT #1446 TELLER 19 - no settlement accounts for it<span class="ids">B-000376</span></td><td class="amount">$1,455.52</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$1,018.13 on 2024-08-02: BRANCH DEPOSIT #7091 TELLER 15 - no settlement accounts for it<span class="ids">B-001282</span></td><td class="amount">$1,018.13</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$719.18 on 2024-07-31: BRANCH DEPOSIT #5725 TELLER 16 - no settlement accounts for it<span class="ids">B-001256</span></td><td class="amount">$719.18</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$654.04 on 2024-08-09: BRANCH DEPOSIT #3798 TELLER 02 - no settlement accounts for it<span class="ids">B-001362</span></td><td class="amount">$654.04</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$632.86 on 2024-09-13: BRANCH DEPOSIT #1087 TELLER 15 - no settlement accounts for it<span class="ids">B-001734</span></td><td class="amount">$632.86</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$523.18 on 2024-06-20: BRANCH DEPOSIT #5722 TELLER 21 - no settlement accounts for it<span class="ids">B-000798</span></td><td class="amount">$523.18</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$381.23 on 2024-08-15: BRANCH DEPOSIT #4926 TELLER 21 - no settlement accounts for it<span class="ids">B-001431</span></td><td class="amount">$381.23</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$308.59 on 2024-08-26: BRANCH DEPOSIT #6266 TELLER 22 - no settlement accounts for it<span class="ids">B-001528</span></td><td class="amount">$308.59</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$301.75 on 2024-07-15: BRANCH DEPOSIT #0557 TELLER 28 - no settlement accounts for it<span class="ids">B-001070</span></td><td class="amount">$301.75</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$296.35 on 2024-08-30: BRANCH DEPOSIT #4853 TELLER 03 - no settlement accounts for it<span class="ids">B-001587</span></td><td class="amount">$296.35</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$283.65 on 2024-09-03: BRANCH DEPOSIT #3229 TELLER 10 - no settlement accounts for it<span class="ids">B-001600</span></td><td class="amount">$283.65</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$270.19 on 2024-05-30: BRANCH DEPOSIT #8734 TELLER 12 - no settlement accounts for it<span class="ids">B-000585</span></td><td class="amount">$270.19</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$200.86 on 2024-05-28: BRANCH DEPOSIT #9988 TELLER 10 - no settlement accounts for it<span class="ids">B-000543</span></td><td class="amount">$200.86</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$132.68 on 2024-08-02: BRANCH DEPOSIT #7374 TELLER 13 - no settlement accounts for it<span class="ids">B-001284</span></td><td class="amount">$132.68</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$83.54 on 2024-06-06: BRANCH DEPOSIT #9335 TELLER 25 - no settlement accounts for it<span class="ids">B-000665</span></td><td class="amount">$83.54</td></tr>
+<tr data-kind="unexplained_bank_line"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Nothing accounts for it</td><td class="what">$73.99 on 2024-06-07: BRANCH DEPOSIT #8749 TELLER 25 - no settlement accounts for it<span class="ids">B-000679</span></td><td class="amount">$73.99</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $661.80, bank took $622.09 on 2024-05-13 - $39.71 unaccounted<span class="ids">CASH-L002-2024-05-11 · B-000404</span></td><td class="amount">$39.71</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $743.81, bank took $705.67 on 2024-09-23 - $38.14 unaccounted<span class="ids">CASH-L002-2024-09-21 · B-001822</span></td><td class="amount">$38.14</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $625.27, bank took $587.75 on 2024-09-11 - $37.52 unaccounted<span class="ids">CASH-L002-2024-09-08 · CASH-L002-2024-09-09 · CASH-L002-2024-09-10 · B-001717</span></td><td class="amount">$37.52</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $958.80, bank took $923.57 on 2024-04-25 - $35.23 unaccounted<span class="ids">CASH-L002-2024-04-23 · CASH-L002-2024-04-24 · B-000228</span></td><td class="amount">$35.23</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,562.68, bank took $1,527.66 on 2024-09-20 - $35.02 unaccounted<span class="ids">CASH-L001-2024-09-18 · CASH-L001-2024-09-19 · B-001805</span></td><td class="amount">$35.02</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $744.00, bank took $709.44 on 2024-04-29 - $34.56 unaccounted<span class="ids">CASH-L001-2024-04-26 · B-000248</span></td><td class="amount">$34.56</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,109.62, bank took $1,076.41 on 2024-09-09 - $33.21 unaccounted<span class="ids">CASH-L002-2024-09-06 · CASH-L002-2024-09-07 · B-001678</span></td><td class="amount">$33.21</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $2,687.21, bank took $2,659.08 on 2024-08-09 - $28.13 unaccounted<span class="ids">CASH-L001-2024-08-06 · CASH-L001-2024-08-07 · CASH-L001-2024-08-08 · B-001361</span></td><td class="amount">$28.13</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $901.16, bank took $875.01 on 2024-08-19 - $26.15 unaccounted<span class="ids">CASH-L002-2024-08-17 · B-001456</span></td><td class="amount">$26.15</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $427.70, bank took $402.04 on 2024-08-21 - $25.66 unaccounted<span class="ids">CASH-L001-2024-08-20 · B-001491</span></td><td class="amount">$25.66</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $424.28, bank took $398.82 on 2024-09-25 - $25.46 unaccounted<span class="ids">CASH-L003-2024-09-22 · CASH-L003-2024-09-23 · CASH-L003-2024-09-24 · B-001862</span></td><td class="amount">$25.46</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $695.05, bank took $670.28 on 2024-07-22 - $24.77 unaccounted<span class="ids">CASH-L002-2024-07-20 · B-001140</span></td><td class="amount">$24.77</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $551.27, bank took $529.60 on 2024-09-24 - $21.67 unaccounted<span class="ids">CASH-L001-2024-09-23 · B-001843</span></td><td class="amount">$21.67</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $476.26, bank took $454.87 on 2024-08-26 - $21.39 unaccounted<span class="ids">CASH-L003-2024-08-24 · CASH-L003-2024-08-25 · B-001527</span></td><td class="amount">$21.39</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $772.90, bank took $751.90 on 2024-07-15 - $21.00 unaccounted<span class="ids">CASH-L003-2024-07-13 · CASH-L003-2024-07-14 · B-001071</span></td><td class="amount">$21.00</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $540.42, bank took $521.94 on 2024-06-17 - $18.48 unaccounted<span class="ids">CASH-L003-2024-06-13 · CASH-L003-2024-06-14 · CASH-L003-2024-06-15 · B-000768</span></td><td class="amount">$18.48</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $302.93, bank took $284.75 on 2024-05-08 - $18.18 unaccounted<span class="ids">CASH-L002-2024-05-07 · B-000366</span></td><td class="amount">$18.18</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $741.20, bank took $723.97 on 2024-08-15 - $17.23 unaccounted<span class="ids">CASH-L001-2024-08-14 · B-001430</span></td><td class="amount">$17.23</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $443.28, bank took $428.08 on 2024-06-06 - $15.20 unaccounted<span class="ids">CASH-L002-2024-06-05 · B-000664</span></td><td class="amount">$15.20</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $250.76, bank took $235.71 on 2024-08-12 - $15.05 unaccounted<span class="ids">CASH-L003-2024-08-11 · B-001380</span></td><td class="amount">$15.05</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $237.83, bank took $223.56 on 2024-04-29 - $14.27 unaccounted<span class="ids">CASH-L003-2024-04-26 · B-000250</span></td><td class="amount">$14.27</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,649.98, bank took $1,636.60 on 2024-06-17 - $13.38 unaccounted<span class="ids">CASH-L002-2024-06-14 · CASH-L002-2024-06-15 · CASH-L002-2024-06-16 · B-000767</span></td><td class="amount">$13.38</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $182.53, bank took $171.58 on 2024-07-17 - $10.95 unaccounted<span class="ids">CASH-L003-2024-07-15 · CASH-L003-2024-07-16 · B-001107</span></td><td class="amount">$10.95</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $116.41, bank took $109.43 on 2024-04-02 - $6.98 unaccounted<span class="ids">CASH-L002-2024-04-01 · B-000006</span></td><td class="amount">$6.98</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $150.88, bank took $144.86 on 2024-09-09 - $6.02 unaccounted<span class="ids">CASH-L003-2024-09-08 · B-001681</span></td><td class="amount">$6.02</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $90.57, bank took $85.14 on 2024-06-11 - $5.43 unaccounted<span class="ids">CASH-L003-2024-06-10 · B-000712</span></td><td class="amount">$5.43</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $1,581.53, bank took $1,576.87 on 2024-08-19 - $4.66 unaccounted<span class="ids">CASH-L001-2024-08-15 · CASH-L001-2024-08-16 · B-001452</span></td><td class="amount">$4.66</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $53.18, bank took $49.99 on 2024-05-22 - $3.19 unaccounted<span class="ids">CASH-L003-2024-05-21 · B-000509</span></td><td class="amount">$3.19</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $52.20, bank took $49.07 on 2024-06-21 - $3.13 unaccounted<span class="ids">CASH-L003-2024-06-20 · B-000815</span></td><td class="amount">$3.13</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $81.57, bank took $78.51 on 2024-04-10 - $3.06 unaccounted<span class="ids">CASH-L003-2024-04-09 · B-000086</span></td><td class="amount">$3.06</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $22.04, bank took $20.72 on 2024-09-18 - $1.32 unaccounted<span class="ids">CASH-L003-2024-09-17 · B-001785</span></td><td class="amount">$1.32</td></tr>
+<tr data-kind="cash_variance"><td><span class="sev MEDIUM">MEDIUM</span></td><td class="kind">Cash came up short</td><td class="what">drawer counted $20.90, bank took $19.65 on 2024-06-12 - $1.25 unaccounted<span class="ids">CASH-L003-2024-06-11 · B-000730</span></td><td class="amount">$1.25</td></tr>
+</tbody></table>
+<div class="empty" id="no-rows" hidden>Nothing of that kind.</div>
+</div>
+<footer>Generated 31 Aug 2026, 12:08 by <code>python3 -m reconciler --html</code>. Every figure traces to <code>matches_detailed.csv</code>, which carries the stage, confidence and reason behind each link.</footer>
+</div>
+<script>
+(function () {
+  var chips = document.querySelectorAll('.chip');
+  var rows = document.querySelectorAll('tbody tr[data-kind]');
+  var empty = document.getElementById('no-rows');
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var kind = chip.dataset.kind;
+      chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c === chip)); });
+      var shown = 0;
+      rows.forEach(function (row) {
+        var on = kind === 'all' || row.dataset.kind === kind;
+        row.hidden = !on;
+        if (on) { shown += 1; }
+      });
+      empty.hidden = shown > 0;
+    });
+  });
+})();
+</script>

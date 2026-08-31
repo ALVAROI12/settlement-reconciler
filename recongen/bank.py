@@ -1,5 +1,5 @@
 """The bank statement: what actually hit the account, described the way a bank
-describes it -- a truncated merchant descriptor, a trace number that matches
+describes it - a truncated merchant descriptor, a trace number that matches
 nothing in the POS, and no settlement id anywhere.
 
 Everything that makes reconciliation hard lives here: timing, aggregation,
@@ -53,7 +53,7 @@ class BankBuilder:
         self.start = scenario.start_date
         self.end = scenario.start_date + dt.timedelta(days=scenario.days - 1)
 
-    # -- primitives -------------------------------------------------------
+    # - primitives -------------------------------------------------------
     def add(self, date, description, amount, category):
         self._seq += 1
         t = BankTxn(posted_date=date, description=description, amount=amount,
@@ -78,7 +78,7 @@ class BankBuilder:
             return "%-18s DISCOUNT FEE %s" % (desc, s.period_end.strftime("%y%m"))
         return "%-18s DEP MID %s TRN%08d" % (desc, mid, rng.randrange(100000000))
 
-    # -- settlement realization -------------------------------------------
+    # - settlement realization -------------------------------------------
     def realize(self, settlements):
         cash = [s for s in settlements if s.settlement_type == "CASH_DRAWER"]
         electronic = [s for s in settlements if s.settlement_type != "CASH_DRAWER"]
@@ -238,7 +238,7 @@ class BankBuilder:
                                      "deposited": deposited, "variance": variance,
                                      "settlement_ids": [g.settlement_id for g in group]})
 
-    # -- non-settlement activity ------------------------------------------
+    # - non-settlement activity ------------------------------------------
     def operating_activity(self):
         """Debits that share the account and sometimes the descriptor. A good
         agent must leave every one of these unmatched."""
@@ -298,7 +298,7 @@ class BankBuilder:
 
             d += dt.timedelta(days=1)
 
-    # -- finalize ---------------------------------------------------------
+    # - finalize ---------------------------------------------------------
     def finalize(self):
         self.txns.sort(key=lambda t: (t.posted_date, t.seq))
         balance = to_cents(self.scenario.opening_balance)

@@ -104,7 +104,7 @@ class ReconcileTests(unittest.TestCase):
 
     def test_a_bank_line_is_never_spent_twice(self):
         """Two settlements may share a combined credit, but only if the same
-        processor funded them -- otherwise the money has been counted twice."""
+        processor funded them - otherwise the money has been counted twice."""
         by_txn = {}
         for l in self.result["engine"].links:
             by_txn.setdefault(l.bank_txn_id, []).append(l.settlement_id)

@@ -2,7 +2,7 @@
 
 Produces a reconciliation dataset with ground truth: sales as a restaurant/retail
 POS records them, settlements as each processor pays them out, and bank lines as
-they actually land -- with the timing, fee and aggregation mismatches that make
+they actually land - with the timing, fee and aggregation mismatches that make
 reconciliation hard in real life.
 """
 

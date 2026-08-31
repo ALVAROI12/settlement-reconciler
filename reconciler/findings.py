@@ -1,5 +1,5 @@
 """Exceptions worth an operator's attention. A reconciliation that only produces
-matches is half a product -- the money is in what did not match, and in what
+matches is half a product - the money is in what did not match, and in what
 matched but should not have."""
 
 from collections import defaultdict
@@ -28,7 +28,7 @@ def find_fee_overcharges(settlements, terms, min_gross=2000, rate_tolerance=0.00
     A batch billed 80 basis points over contract is the same breach whether the
     day took $49 or $4,900, and a dollar threshold only ever catches the big days.
     Two floors keep rounding out of the results: a batch has to be worth at least
-    $20, and the overage has to clear a quarter -- a single cent of rounding on a
+    $20, and the overage has to clear a quarter - a single cent of rounding on a
     small batch is a large percentage and no money at all.
     """
     out = []
@@ -41,7 +41,7 @@ def find_fee_overcharges(settlements, terms, min_gross=2000, rate_tolerance=0.00
         if overage_rate > rate_tolerance and delta > 25:
             out.append(Finding(
                 kind="fee_overcharge", severity="HIGH",
-                summary="%s billed %s on %s of gross -- %.2f%% over the contracted "
+                summary="%s billed %s on %s of gross - %.2f%% over the contracted "
                         "schedule, %s more than agreed" % (
                             s.processor, _dollars(s.total_fees), _dollars(s.gross_amount),
                             100.0 * overage_rate, _dollars(delta)),
@@ -66,7 +66,7 @@ def find_duplicate_credits(links, bank, open_bank):
         if twins:
             out.append(Finding(
                 kind="duplicate_credit", severity="HIGH",
-                summary="%s credit of %s on %s repeats %s, already matched -- "
+                summary="%s credit of %s on %s repeats %s, already matched - "
                         "likely a double post" % (t.processor, _dollars(t.amount),
                                                   t.posted_date, twins[0].bank_txn_id),
                 amount=t.amount, bank_txn_ids=[t.bank_txn_id, twins[0].bank_txn_id]))
@@ -87,7 +87,7 @@ def find_cash_variances(links, bank):
         if variance:
             out.append(Finding(
                 kind="cash_variance", severity="MEDIUM" if abs(variance) < 5000 else "HIGH",
-                summary="drawer counted %s, bank took %s on %s -- %s unaccounted"
+                summary="drawer counted %s, bank took %s on %s - %s unaccounted"
                         % (_dollars(counted), _dollars(by_id[bid].amount),
                            by_id[bid].posted_date, _dollars(abs(variance))),
                 amount=variance, bank_txn_ids=[bid],
@@ -113,7 +113,7 @@ def find_unexplained_settlement_lines(open_bank, duplicates):
             continue
         out.append(Finding(
             kind="unexplained_bank_line", severity="MEDIUM",
-            summary="%s on %s: %s -- no settlement accounts for it"
+            summary="%s on %s: %s - no settlement accounts for it"
                     % (_dollars(t.amount), t.posted_date, t.description.strip()),
             amount=t.amount, bank_txn_ids=[t.bank_txn_id]))
     return out

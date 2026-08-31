@@ -1,7 +1,7 @@
 """Optional review stage: hand the residual to Claude.
 
 The deterministic stages are good at what they can prove and correctly refuse
-everything else. What is left is genuinely ambiguous -- a deposit that is close
+everything else. What is left is genuinely ambiguous - a deposit that is close
 but not exact, a descriptor that reads like a settlement but matches no schedule,
 a batch that may have been funded inside a credit the rules could not decompose.
 That is judgement, and it is what a model is for.
@@ -42,7 +42,7 @@ processors withhold fees from each deposit.
 from a single store, and the envelope is sometimes short by tens of dollars.
 - The account also carries payroll, rent, vendor drafts, loans, insurance, ads and owner \
 draws. These are NOT settlements and must never be matched to one, even when the \
-descriptor names the same brand -- a "TOAST INC SOFTWARE FEE" debit is not a Toast deposit.
+descriptor names the same brand - a "TOAST INC SOFTWARE FEE" debit is not a Toast deposit.
 
 Rules for your answer:
 - Only ever cite bank_txn_id values from the candidates given to you. Never invent one.
@@ -218,8 +218,8 @@ class ResidualReviewer:
     def review_batched(self, cases, poll_seconds=20, timeout_seconds=3600):
         """Same questions through the Batches API at half the token price.
 
-        Nothing here is latency-sensitive -- a month-end reconciliation is run once
-        and read later -- so the batch endpoint is the right default for a large
+        Nothing here is latency-sensitive - a month-end reconciliation is run once
+        and read later - so the batch endpoint is the right default for a large
         residual. Results come back in any order and are keyed by custom_id.
         """
         from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
@@ -286,7 +286,7 @@ def apply_verdicts(engine, verdicts, cases, min_confidence=0.7):
 
     A proposal survives only if it cites candidates that were actually offered,
     that are still unexplained, and whose amounts add up to the settlement. Anything
-    else is recorded as rejected -- visible in the report, absent from the numbers.
+    else is recorded as rejected - visible in the report, absent from the numbers.
     """
     from .engine import _cash_tolerance
 
