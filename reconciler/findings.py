@@ -8,7 +8,8 @@ from .model import Finding
 
 
 def _dollars(cents):
-    return "$%s%.2f" % ("-" if cents < 0 else "", abs(cents) / 100.0)
+    whole, frac = divmod(abs(int(cents)), 100)
+    return "%s$%s.%02d" % ("-" if cents < 0 else "", "{:,}".format(whole), frac)
 
 
 def expected_fee(settlement, terms):

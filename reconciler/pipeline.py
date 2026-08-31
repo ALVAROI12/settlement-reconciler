@@ -5,26 +5,46 @@ import json
 import os
 from collections import Counter, defaultdict
 
+from . import dashboard
 from . import findings as findings_mod
+from . import llm
 from .engine import Engine
 from .loader import load_all
 
 
-def reconcile(data_dir, out_dir, late_window=5, cash_window=4):
+def reconcile(data_dir, out_dir, late_window=5, cash_window=4, reviewer=None,
+              batched=False):
     data = load_all(data_dir)
     engine = Engine(data["settlements"], data["bank"], data["terms"],
                     late_window=late_window, cash_window=cash_window)
     engine.run()
+
+    review = None
+    if reviewer is not None:
+        cases = llm.build_cases(engine)
+        verdicts = (reviewer.review_batched(cases) if batched
+                    else reviewer.review(cases))
+        review = llm.apply_verdicts(engine, verdicts, cases)
+        review["cases"] = len(cases)
+        review["calls"] = reviewer.calls
+        review["usage"] = reviewer.usage
+
     findings = findings_mod.collect(engine, data["settlements"], data["terms"], data["bank"])
 
     os.makedirs(out_dir, exist_ok=True)
     _write_predictions(out_dir, engine)
     _write_detail(out_dir, engine)
     summary = _summary(data, engine, findings)
-    _write_report(out_dir, summary, findings, engine)
+    if review is not None:
+        summary["review"] = {"cases": review["cases"], "calls": review["calls"],
+                             "accepted": len(review["accepted"]),
+                             "rejected": len(review["rejected"]),
+                             "usage": review["usage"]}
+    _write_report(out_dir, summary, findings, engine, review)
     with open(os.path.join(out_dir, "summary.json"), "w") as fh:
         json.dump(summary, fh, indent=2)
-    return {"engine": engine, "findings": findings, "summary": summary, "data": data}
+    return {"engine": engine, "findings": findings, "summary": summary, "data": data,
+            "review": review}
 
 
 def _write_predictions(out_dir, engine):
@@ -68,7 +88,7 @@ def _summary(data, engine, findings):
     }
 
 
-def _write_report(out_dir, summary, findings, engine):
+def _write_report(out_dir, summary, findings, engine, review=None):
     lines = ["# Reconciliation report", "",
              "%d settlements against %d bank lines." % (summary["settlements"],
                                                         summary["bank_transactions"]),
@@ -86,6 +106,17 @@ def _write_report(out_dir, summary, findings, engine):
     lines += ["", "## What was not matched", "", "| disposition | settlements |", "|---|---:|"]
     for stage in dispositions:
         lines.append("| %s | %d |" % (stage.replace("_", " "), summary["by_stage"].get(stage, 0)))
+
+    if review is not None:
+        lines += ["", "## Model review of the residual", "",
+                  "%d case(s) referred, %d accepted after arithmetic checking, "
+                  "%d proposal(s) rejected." % (review["cases"], len(review["accepted"]),
+                                                len(review["rejected"])), ""]
+        for entry in review["rejected"][:10]:
+            lines.append("- **rejected** `%s`: %s" % (entry["settlement_id"],
+                                                      entry["reason"]))
+        if len(review["rejected"]) > 10:
+            lines.append("- _...%d more_" % (len(review["rejected"]) - 10))
 
     lines += ["", "## Exceptions", ""]
     if not findings:
@@ -120,10 +151,33 @@ def main(argv=None):
                     help="days after the expected date a deposit may still land")
     ap.add_argument("--cash-window", type=int, default=4,
                     help="days a drawer may sit before it is banked")
+    ap.add_argument("--llm", action="store_true",
+                    help="refer the unresolved residual to Claude for review")
+    ap.add_argument("--llm-model", default=llm.MODEL)
+    ap.add_argument("--llm-effort", default="medium",
+                    choices=["low", "medium", "high", "xhigh", "max"])
+    ap.add_argument("--llm-cache", default="llm_cache.json",
+                    help="replay file; a cached case is never re-asked")
+    ap.add_argument("--llm-batch", action="store_true",
+                    help="use the Batches API -- half price, not latency-sensitive")
+    ap.add_argument("--llm-max-cases", type=int, default=None)
+    ap.add_argument("--llm-offline", action="store_true",
+                    help="answer only from the cache; never call the API")
+    ap.add_argument("--html", nargs="?", const="dashboard.html", default=None,
+                    metavar="PATH",
+                    help="also write a self-contained HTML dashboard")
+    ap.add_argument("--html-title", default="Reconciliation")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 
-    result = reconcile(args.data, args.out, args.late_window, args.cash_window)
+    reviewer = None
+    if args.llm:
+        reviewer = llm.ResidualReviewer(
+            model=args.llm_model, cache_path=args.llm_cache, effort=args.llm_effort,
+            max_cases=args.llm_max_cases, offline=args.llm_offline)
+
+    result = reconcile(args.data, args.out, args.late_window, args.cash_window,
+                       reviewer=reviewer, batched=args.llm_batch)
     if not args.quiet:
         s = result["summary"]
         print("matched %d/%d settlements, %d links, %d bank lines unexplained"
@@ -131,6 +185,15 @@ def main(argv=None):
                  s["bank_lines_unexplained"]))
         for stage, n in s["by_stage"].items():
             print("  %-22s %5d" % (stage, n))
+        if "review" in s:
+            r = s["review"]
+            print("  model review: %d case(s), %d call(s), %d accepted, %d rejected"
+                  % (r["cases"], r["calls"], r["accepted"], r["rejected"]))
         print("wrote %s/predictions.csv, matches_detailed.csv, report.md, summary.json"
               % args.out)
+    if args.html:
+        path = args.html if os.path.isabs(args.html) else os.path.join(args.out, args.html)
+        dashboard.write(result, path, args.html_title)
+        if not args.quiet:
+            print("wrote %s" % path)
     return 0

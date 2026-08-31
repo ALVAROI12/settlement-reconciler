@@ -15,10 +15,13 @@ posted twice.
 
 ```
 python3 -m recongen --out data                       # 65k orders, 180 days, 3 stores
-python3 -m reconciler --data data --out out          # match and explain
+python3 -m reconciler --data data --out out --html   # match, explain, render
 python3 score.py --truth data --submission out/predictions.csv
 python3 evaluate.py --seeds 7 21 55 99               # both systems, four periods
 ```
+
+The dashboard `--html` writes is a self-contained page — [see one rendered from the
+default period](https://claude.ai/code/artifact/ab4681c7-a906-482c-a0fc-4f3bec8ddc91).
 
 Zero dependencies. Python 3.9+. Same seed → byte-identical output.
 
@@ -90,6 +93,7 @@ is how a real bank feed would have to be handled.
 | `cash_rollup` | Which store banked which days, solved per store over the whole period. |
 | `debit_match` | Chargebacks and the monthly Amex discount bill. |
 | `declare_missing` | What is provably absent, separated from what is merely unmatched. |
+| `llm_review` | Optional. The residual the rules deliberately refused, referred to Claude. |
 
 Three of those took real work:
 
@@ -114,6 +118,39 @@ asserts a deposit is missing only when the statement can be shown not to contain
 Cash never qualifies, because it is banked in aggregate and a missing amount proves
 nothing. Everything else short of proof is left unresolved for review.
 
+## The review stage
+
+The deterministic stages are good at what they can prove and correctly refuse
+everything else. What is left — about 28 items per six-month period — is genuinely
+ambiguous, and that is what a model is for. `--llm` refers each residual case to
+Claude with the settlement, the candidate bank lines, and the reason the rules
+stopped.
+
+Two rules govern it, both about not trusting the model:
+
+1. **It may only cite candidates it was given.** An invented `bank_txn_id` is
+   discarded.
+2. **Arithmetic has the final say.** Every proposal is re-checked against the
+   amounts before it becomes a link. One that does not add up is recorded as
+   rejected — visible in the report, absent from the numbers.
+
+So the worst case for a hallucinated answer is a rejected proposal, never a wrong
+number. Eleven tests hand the validator deliberately bad proposals — invented ids,
+sums that do not add up, lines already spent, hedged confidence — and assert none of
+them reach the reconciliation.
+
+`UNRESOLVED` is an accepted answer, not a failure. A wrong match costs an operator
+far more than an honest referral to a human.
+
+```
+pip install anthropic                                # the only dependency, and it is optional
+python3 -m reconciler --data data --out out --llm --llm-batch
+```
+
+Responses are cached by case, so a rerun costs nothing and an eval replays offline
+with `--llm-offline`. `--llm-batch` routes through the Batches API at half the token
+price — nothing about a month-end reconciliation is latency-sensitive.
+
 ## What gets written
 
 Generator (`data/`):
@@ -135,6 +172,7 @@ Reconciler (`out/`):
 | `matches_detailed.csv` | Every link with the stage, confidence and rationale behind it. |
 | `report.md` | The operator-facing view: what matched, what did not, and the exceptions ranked by money at stake. |
 | `summary.json` | Machine-readable counts and exposure by finding type. |
+| `dashboard.html` | Self-contained operator dashboard (`--html`). No assets beyond its typefaces. |
 
 ## Design notes
 
@@ -151,7 +189,7 @@ Reconciler (`out/`):
 ## Tests
 
 ```
-python3 -m unittest discover -s tests -v      # 33 tests
+python3 -m unittest discover -s tests -v      # 48 tests
 ```
 
 Generator invariants: totals tie out order → payment → settlement → link, links
@@ -162,6 +200,9 @@ Reconciler gates: descriptor parsing (including the software-fee trap), no bank 
 spent twice, links never exceed what a credit paid, every injected fee overcharge
 found, F1 above 0.95 and precision above 0.99 on freshly generated data — so a
 regression in matching quality fails the build.
+
+Review-stage gates: invented bank lines, mismatched sums, already-spent lines and
+low-confidence proposals are all rejected; a cached case is never re-asked.
 
 ## Data
 
